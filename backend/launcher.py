@@ -5,13 +5,36 @@ import subprocess
 import tempfile
 import json
 import urllib.request
+from stashapi.stashapp import StashInterface
 
 # =========================================================================
 # CONFIGURATION TARGETS
 # =========================================================================
-VIEWER_PATH = r"C:\\Program Files (x86)\\FastStone Image Viewer\\FSViewer.exe"  
-
 VIRTUAL_BASE_DIR = os.path.join(tempfile.gettempdir(), "StashVirtualGalleries")
+
+def fetch_stash_custom_viewer_setting():
+    """Queries Stash's native plugin settings tree to pull the custom path dynamically"""
+    gql_query = '{ configuration { plugins } }'
+    req_payload = {"query": gql_query}
+    
+    url = "http://localhost:9999/graphql"
+    headers = {"Content-Type": "application/json"}
+    req = urllib.request.Request(url, data=json.dumps(req_payload).encode('utf-8'), headers=headers)
+    
+    try:
+        with urllib.request.urlopen(req) as response:
+            res_json = json.loads(response.read().decode('utf-8'))
+            plugins_config = res_json.get("data", {}).get("configuration", {}).get("plugins", {})
+            
+            # Extract the setting out of your ExternalGalleryViewer configuration map
+            viewer_config = plugins_config.get("ExternalGalleryViewer", {})
+            viewer_path = viewer_config.get("viewer_path", "explorer")
+            
+            return viewer_path.strip() if viewer_path else "explorer"
+    except Exception as err:
+        sys.stderr.write(f"ExternalGalleryViewer: Setting fetch lookup failed, falling back to explorer: {str(err)}\n")
+        
+    return "explorer"
 
 def clear_previous_virtual_session():
     """Wipes out any old shortcuts from your last launch to keep the queue fresh."""
@@ -66,7 +89,6 @@ def open_viewer(gallery_ids, input_data):
     clear_previous_virtual_session()
     links_created_count = 0
 
-    # Strict GraphQL structure to extract specific property field layouts from Stash database schemas
     gql_query = """
     query FindGallery($id: ID!) {
         findGallery(id: $id) {
@@ -88,27 +110,19 @@ def open_viewer(gallery_ids, input_data):
             gallery_node = res_json.get("data", {}).get("findGallery") or {}
 
             real_folder_path = None
-            
+            gallery_title = gallery_node.get("title") or f"Gallery_{gallery_id}"
+
             if gallery_node:
-                # 1. Extract path from folder mapping block or fallback to direct files definitions
                 if gallery_node.get("folder") and gallery_node["folder"].get("path"):
                     real_folder_path = gallery_node["folder"]["path"]
                 elif gallery_node.get("files") and isinstance(gallery_node["files"], list) and len(gallery_node["files"]) > 0:
-                    first_file = gallery_node["files"][0] # Fixed array index capture
+                    first_file = gallery_node["files"][0]
                     if first_file.get("path"):
                         real_folder_path = os.path.dirname(first_file["path"])
 
-            # =========================================================================
-            # CRITICAL UPDATE: Extract the actual physical folder name instead of using IDs
-            # =========================================================================
             if real_folder_path:
-                # os.path.basename returns the last part of a directory path string
-                # e.g., "C:\\My Galleries\\Summer 2024" -> "Summer 2024"
                 folder_basename = os.path.basename(real_folder_path.rstrip(os.sep))
                 gallery_title = folder_basename if folder_basename else f"Gallery_{gallery_id}"
-            else:
-                gallery_title = gallery_node.get("title") or f"Gallery_{gallery_id}"
-            # =========================================================================
 
             sys.stderr.write(f"ExternalGalleryViewer: Mapping ID {gallery_id} -> Path: {real_folder_path} (Name: {gallery_title})\n")
 
@@ -121,30 +135,30 @@ def open_viewer(gallery_ids, input_data):
         except Exception as err:
             sys.stderr.write(f"Error compiling properties for ID {gallery_id}: {str(err)}\n")
 
-
     if links_created_count == 0:
         return {"status": "error", "output": "No items successfully mapped to disk folders."}
 
-# 4. Fire your choice of custom External Viewer application asynchronously!
+    # =========================================================================
+    # DYNAMIC VIEWER PATH EVALUATION
+    # =========================================================================
+    VIEWER_PATH = fetch_stash_custom_viewer_setting()
+    sys.stderr.write(f"ExternalGalleryViewer: Activating viewer target path: '{VIEWER_PATH}'\n")
+
     try:
         if os.name == 'nt':
-            # Check if you set a custom player path, otherwise fallback to standard File Explorer
             if VIEWER_PATH and VIEWER_PATH != "explorer" and os.path.exists(VIEWER_PATH):
-                # Pass the temporary virtual layout folder right into FastStone Image Viewer!
-                # Using subprocess.Popen ensures it runs completely detached from Stash.
                 subprocess.Popen([VIEWER_PATH, VIRTUAL_BASE_DIR])
-                sys.stderr.write(f"ExternalGalleryViewer: Successfully launched custom viewer: {VIEWER_PATH}\n")
+                sys.stderr.write(f"ExternalGalleryViewer: Launched custom viewer: {VIEWER_PATH}\n")
             else:
-                # Safe fallback to standard Windows Explorer if the custom path can't be found
-                subprocess.run(f'explorer.exe "{VIRTUAL_BASE_DIR}"', shell=True)
+                if VIEWER_PATH and VIEWER_PATH != "explorer":
+                    sys.stderr.write(f"Warning: Target path not found on disk: {VIEWER_PATH}. Falling back to Explorer.\n")
+                subprocess.Popen(f'explorer.exe "{VIRTUAL_BASE_DIR}"', shell=True)
         else:
-            # Linux / macOS standard fallback matching paths
             subprocess.Popen([VIEWER_PATH, VIRTUAL_BASE_DIR], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                          
         return {
             "status": "success", 
-            "output": f"Virtual folder populated with {links_created_count} items and launched via viewer."
+            "output": f"Virtual folder populated with {links_created_count} items and launched."
         }
     except Exception as launch_err:
-        return {"status": "error", "output": f"Failed to execute path tool viewer engine target: {str(launch_err)}"}
-
+        return {"status": "error", "output": f"Failed to execute path viewer: {str(launch_err)}"}

@@ -17,3 +17,8 @@ ui:
 tasks:
   - name: "Launch External Player"
     description: "Spawns the local desktop viewer application"
+
+settings:
+  viewer_path:
+    displayName: "External Viewer Application Path"
+    type: STRING

@@ -562,5 +562,18 @@
     // render.
     syncFromConfig();
     onNavigate();
+    
+    if (typeof PluginApi !== 'undefined' && PluginApi.register && PluginApi.register.pluginSetting) {
+        PluginApi.register.pluginSetting({
+            plugin_id: "ExternalGalleryViewer",
+            setting_name: "viewer_path",
+            type: "string",
+            label: "External Viewer Application Path",
+            description: "Provide the absolute system path to your image viewer application executable binary (e.g., C:\\Program Files\\FastStone Image Viewer\\FSViewer.exe). Default is 'explorer'.",
+            default_value: "explorer"
+        });
+        console.log("ExternalGalleryViewer: Native UI plugin path input setting panel registered successfully.");
+    }
+    
 })();
 
