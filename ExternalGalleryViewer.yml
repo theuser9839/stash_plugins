@@ -1,0 +1,19 @@
+name: "External Gallery Viewer"
+description: "Advanced gallery viewing overlay with playlist docking"
+version: "1.0.0"
+
+exec:
+  - python
+  - "{pluginDir}/backend/main.py"
+
+interface: raw
+
+ui:
+  javascript:
+    - frontend/main.js
+  css:
+    - frontend/main.css
+
+tasks:
+  - name: "Launch External Player"
+    description: "Spawns the local desktop viewer application"
