@@ -70,7 +70,7 @@ Universal Media Launcher features native system fallbacks. To change your viewin
 ###❌
 
 ## TODO
-[ ] Change log level before pushing to a repo also remove js console logging
+[x] Change log level before pushing to a repo also remove js console logging
 [x] Add Clean up task for virtual folders
 [x] toggle button is bleeding to the scene view and it covers a part of the video player.
 [x] add a standard logging to a text file like the renamer plugin does.
