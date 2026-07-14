@@ -215,9 +215,24 @@
             document.getElementById('mv-close-launcher-btn').addEventListener('click', () => setPickingMode(false));
         }
 
-        // Real-time counter metrics string injection out of localStorage caches
-        document.getElementById('mv-galleries-count').textContent = getQueue('galleries').length;
-        document.getElementById('mv-scenes-count').textContent = getQueue('scenes').length;
+        // =========================================================================
+        // DYNAMIC BADGE COUNT HOOKS: Updates numbers and toggle active highlight classes
+        // =========================================================================
+        const gLen = getQueue('galleries').length;
+        const sLen = getQueue('scenes').length;
+
+        const gCountEl = document.getElementById('mv-galleries-count');
+        const sCountEl = document.getElementById('mv-scenes-count');
+
+        if (gCountEl && sCountEl) {
+            // Update the textual numbers
+            gCountEl.textContent = gLen;
+            sCountEl.textContent = sLen;
+
+            // Dynamically inject/remove the 'zero' class based on actual array lengths
+            gCountEl.classList.toggle('zero', gLen === 0);
+            sCountEl.classList.toggle('zero', sLen === 0);
+        }
     }
 
     // =========================================================================

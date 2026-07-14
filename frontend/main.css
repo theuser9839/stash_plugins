@@ -113,14 +113,32 @@ body:not(.mv-picking-mode) .mv-add-btn {
     display: flex !important;
     align-items: center !important;
     justify-content: space-around !important;
-    gap: 12px !important;
+    gap: 14px !important;
     background: var(--mv-chrome-bg);
     border: 1px solid var(--mv-border);
-    border-radius: 30px !important; /* Premium rounded pill profile */
-    padding: 6px 16px !important;
+    border-radius: 30px !important;
+    padding: 8px 18px !important;
+    
+    /* Premium Entry Animation Layer */
+    animation: egvPillSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
+#mv-launcher:hover {
+    box-shadow: 0 8px 24px rgba(212, 175, 55, 0.15); /* Subtle golden hover glow */
+}
+
+@keyframes egvPillSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.92); /* Starts lower and slightly smaller */
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);       /* Slides up smoothly to normal size */
+    }
+}
 .mv-launcher-section {
     display: flex !important;
     align-items: center !important;
@@ -134,21 +152,45 @@ body:not(.mv-picking-mode) .mv-add-btn {
     margin: 0 4px !important;
 }
 
+.mv-launch-trigger-btn {
+    background: var(--mv-accent) !important;
+    color: #fff !important;
+}
+
+.mv-launch-trigger-btn:hover {
+    background: var(--mv-accent-hover) !important;
+    transform: scale(1.1); /* Micro-scale interaction bounce */
+}
+
+.mv-launch-trigger-btn:active {
+    transform: scale(0.95); /* Tactile press feedback */
+}
+
+.mv-launch-trigger-btn svg {
+    width: 15px !important;
+    height: 15px !important;
+}
+
+
 /* Base style alignments for the inline operational dashboard button stubs */
+ 
 .mv-launch-trigger-btn, 
 .mv-clear-trigger-btn, 
 .mv-close-system-btn {
-    display: flex !important;
+    /* FIXED CENTER: Forcing inline-flex absolute centering for both axes */
+    display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
+    
     background: transparent !important;
     border: none !important;
     padding: 0 !important;
     cursor: pointer !important;
-    width: 30px !important;
-    height: 30px !important;
+    width: 32px !important;   /* Slightly widened to give the larger icon breathing room */
+    height: 32px !important;
     border-radius: 6px !important;
     line-height: 1 !important;
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.15s ease, color 0.15s ease !important;
 }
 
 /* Player Trigger Buttons Style Rules */
@@ -163,8 +205,10 @@ body:not(.mv-picking-mode) .mv-add-btn {
 }
 
 .mv-launch-trigger-btn svg {
-    width: 15px !important;
-    height: 15px !important;
+    width: 18px !important;
+    height: 18px !important;
+    display: block !important;
+    margin: 0 auto !important; /* Forces perfect browser bounding box alignment */
 }
 
 /* Consolidated Playlist Item Metric Count Badges */
@@ -178,8 +222,18 @@ body:not(.mv-picking-mode) .mv-add-btn {
     padding: 0 6px !important;
     font-size: 13px !important;
     font-weight: 700 !important;
-    background: #2a2a2a !important;
-    color: #ccc !important;
+    
+    /* DEFAULT STATE: Muted and subtle when the queue playlist is at 0 items */
+    background: #232323 !important;
+    color: #666 !important;
+    border: 1px solid transparent;
+    transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease, border-color 0.2s ease !important;
+}
+
+.mv-launcher-count:not(.zero) {
+    background: #333333 !important; 
+    color: #ffffff !important;
+    border-color: rgba(214, 175, 55, 0.3) !important; /* Elegant thin golden rim */
 }
 
 /* Active Clear/Reset Queue Action Toggles (&times;) */
@@ -189,8 +243,9 @@ body:not(.mv-picking-mode) .mv-add-btn {
 }
 
 .mv-clear-trigger-btn:hover {
-    color: #ff4444 !important; /* Error red highlights for array resets */
+    color: #ff4444 !important;
     background: rgba(255, 68, 68, 0.1) !important;
+    transform: scale(1.15) rotate(90deg); /* Playful rotational scale pop */
 }
 
 /* Unified Operational Close Cross Identifier Hook (&#x2715;) */
@@ -204,6 +259,7 @@ body:not(.mv-picking-mode) .mv-add-btn {
 .mv-close-system-btn:hover {
     color: #fff !important;
     background: var(--mv-border) !important;
+    transform: scale(1.1);
 }
 
 /* ── Filter add button ─────────────────────────────────────────────────────── */
