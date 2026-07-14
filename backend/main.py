@@ -11,7 +11,7 @@ def main():
         raw_input = sys.stdin.read()
         input_data = json.loads(raw_input)
     except Exception as e:
-        sys.stderr.write(f"ExternalGalleryViewer: Failed to parse stdin JSON: {str(e)}\n")
+        sys.stderr.write(f"UniversalMediaLauncher: Failed to parse stdin JSON: {str(e)}\n")
         input_data = {}
 
     # =========================================================================
@@ -26,12 +26,10 @@ def main():
         raw_args = input_data.get("args", [])
         raw_args_string = json.dumps(raw_args)
         if '"scenes"' in raw_args_string:
-            task_name = "Launch Scene Player"
+            task_name = "Launch Video Player"
         else:
-            task_name = "Launch External Player"
+            task_name = "Launch Image Viewer"
     # =========================================================================
-
-    sys.stderr.write(f"ExternalGalleryViewer: Verified active task routing target -> '{task_name}'\n")
 
     raw_args = input_data.get("args", [])
     args_payload = []
@@ -43,20 +41,21 @@ def main():
         longest_match = max(matches, key=len)
         args_payload = [x.strip() for x in longest_match.split(',') if x.strip().isdigit()]
 
-    sys.stderr.write(f"ExternalGalleryViewer: Extracted item array: {args_payload}\n")
+    
 
     # =========================================================================
     # SYSTEM ROUTING FORK: Clean task separation based strictly on name
     # =========================================================================
+    sys.stderr.write(f"[DEBUG] [UniversalMediaLauncher] Processing task '{task_name}' for {len(args_payload)} items.\n")
     response = {"status": "error", "output": f"Unknown or unhandled task: '{task_name}'"}
 
-    if task_name == "Launch External Player":
+    if task_name == "Launch Image Viewer":
         try:
             response = launcher.open_viewer(args_payload, input_data)
         except Exception as run_err:
             response = {"status": "error", "output": f"Gallery launcher crashed: {str(run_err)}"}
             
-    elif task_name == "Launch Scene Player":
+    elif task_name == "Launch Video Player":
         try:
             response = launcher.open_scene_player(args_payload, input_data)
         except Exception as run_err:

@@ -26,10 +26,10 @@ def fetch_stash_custom_setting(setting_key):
             res_json = json.loads(response.read().decode('utf-8'))
             plugins_config = res_json.get("data", {}).get("configuration", {}).get("plugins", {})
             
-            viewer_config = plugins_config.get("ExternalGalleryViewer", {})
+            viewer_config = plugins_config.get("UniversalMediaLauncher", {})
             return viewer_config.get(setting_key, "explorer").strip()
     except Exception as err:
-        sys.stderr.write(f"ExternalGalleryViewer: Setting fetch lookup failed for {setting_key}: {str(err)}\n")
+        sys.stderr.write(f"UniversalMediaLauncher: Setting fetch lookup failed for {setting_key}: {str(err)}\n")
         
     return "explorer"
 
@@ -73,7 +73,7 @@ def query_stash_raw_graphql(query, variables=None):
         with urllib.request.urlopen(req) as response:
             return json.loads(response.read().decode('utf-8'))
     except Exception as e:
-        sys.stderr.write(f"ExternalGalleryViewer: Raw GraphQL Fetch Error: {str(e)}\n")
+        sys.stderr.write(f"UniversalMediaLauncher: Raw GraphQL Fetch Error: {str(e)}\n")
         return {}
 
 # =========================================================================
@@ -118,8 +118,6 @@ def open_viewer(gallery_ids, input_data):
                 folder_basename = os.path.basename(real_folder_path.rstrip(os.sep))
                 gallery_title = folder_basename if folder_basename else f"Gallery_{gallery_id}"
 
-            sys.stderr.write(f"ExternalGalleryViewer: Mapping Gallery ID {gallery_id} -> Path: {real_folder_path}\n")
-
             if real_folder_path and os.path.exists(real_folder_path):
                 if create_shortcut_link(real_folder_path, index, gallery_title):
                     links_created_count += 1
@@ -133,6 +131,7 @@ def open_viewer(gallery_ids, input_data):
     try:
         if os.name == 'nt' and VIEWER_PATH and VIEWER_PATH != "explorer" and os.path.exists(VIEWER_PATH):
             subprocess.Popen([VIEWER_PATH, VIRTUAL_BASE_DIR])
+            sys.stderr.write(f"[DEBUG] [UniversalMediaLauncher] Image viewer process initiated.\n")
         else:
             subprocess.Popen(f'explorer.exe "{VIRTUAL_BASE_DIR}"', shell=True)
         return {"status": "success", "output": "Galleries folder launched."}
@@ -149,7 +148,6 @@ def open_scene_player(scene_ids, input_data):
 
     # Fetch your active chosen video player string setting live from the DB on execution tick
     PLAYER_PATH = fetch_stash_custom_setting("player_path")
-    sys.stderr.write(f"ExternalGalleryViewer: Target Video Player Path: '{PLAYER_PATH}'\n")
 
     if not PLAYER_PATH or PLAYER_PATH == "explorer":
         return {"status": "error", "output": "Please configure your External Video Player Application Path in Stash settings first!"}
@@ -180,7 +178,6 @@ def open_scene_player(scene_ids, input_data):
                     file_path = file_node.get("path")
                     if file_path and os.path.exists(file_path):
                         video_files_to_play.append(file_path)
-                        sys.stderr.write(f"ExternalGalleryViewer: Resolved Scene ID {scene_id} -> Video File: {file_path}\n")
                         break # Grab the primary file item and step onto the next scene ID
         except Exception as err:
             sys.stderr.write(f"Error resolving file track for scene ID {scene_id}: {str(err)}\n")
@@ -194,7 +191,7 @@ def open_scene_player(scene_ids, input_data):
             # Passes the list of file strings directly into the executable process asynchronously
             execution_args = [PLAYER_PATH] + video_files_to_play
             subprocess.Popen(execution_args)
-            sys.stderr.write(f"ExternalGalleryViewer: Successfully spawned video player process container targeting {len(video_files_to_play)} videos.\n")
+            sys.stderr.write(f"[DEBUG] [UniversalMediaLauncher] Successfully spawned video player process container targeting {len(video_files_to_play)} tracks.\n")
             return {"status": "success", "output": f"Launched video player with {len(video_files_to_play)} items."}
         else:
             sys.stderr.write(f"Error: Configured video player application binary not found on disk: {PLAYER_PATH}\n")

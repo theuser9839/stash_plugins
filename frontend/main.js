@@ -4,9 +4,9 @@
     // =========================================================================
     // AUTHORITATIVE PERSISTENT DUAL STORAGE KEYS
     // =========================================================================
-    const KEY_GALLERIES = 'ExternalGalleryViewer_galleries_queue';
-    const KEY_SCENES    = 'ExternalGalleryViewer_scenes_queue';
-    const KEY_PICKING   = 'ExternalGalleryViewer_picking_mode';
+    const KEY_GALLERIES = 'UniversalMediaLauncher_galleries_queue';
+    const KEY_SCENES    = 'UniversalMediaLauncher_scenes_queue';
+    const KEY_PICKING   = 'UniversalMediaLauncher_picking_mode';
     const MAX_QUEUE     = 50;
 
     // Premium UI Vector Icons Matching Option 1 & A Clean Video Camera Roll
@@ -31,7 +31,7 @@
 
     function setQueue(type, arr) {
         // 1. Commit instantly to your browser window's local tracking state
-        const storageKey = type === 'scenes' ? 'ExternalGalleryViewer_scenes_queue' : 'ExternalGalleryViewer_galleries_queue';
+        const storageKey = type === 'scenes' ? 'UniversalMediaLauncher_scenes_queue' : 'UniversalMediaLauncher_galleries_queue';
         localStorage.setItem(storageKey, JSON.stringify(arr));
         
         // 2. Redraw the count numbers on your screen instantly
@@ -44,11 +44,11 @@
             const dbField = type === 'scenes' ? 'scenes_queue' : 'galleries_queue';
             
             PluginApi.GQL.configurePlugin({
-                plugin_id: "ExternalGalleryViewer",
+                plugin_id: "UniversalMediaLauncher",
                 settings: {
                     [dbField]: JSON.stringify(arr)
                 }
-            }).catch(err => console.error("ExternalGalleryViewer: Persistent database commit failed:", err));
+            }).catch(err => console.error("UniversalMediaLauncher: Persistent database commit failed:", err));
         }
     }
 
@@ -75,18 +75,18 @@
         const settingField = type === 'scenes' ? 'scenes_queue' : 'galleries_queue';
         
         PluginApi.GQL.configurePlugin({
-            plugin_id: "ExternalGalleryViewer",
+            plugin_id: "UniversalMediaLauncher",
             settings: {
                 [settingField]: JSON.stringify(queueArr)
             }
-        }).catch(err => console.error("ExternalGalleryViewer: Persistent database commit failed:", err));
+        }).catch(err => console.error("UniversalMediaLauncher: Persistent database commit failed:", err));
     }
 
     function syncFromStashConfig() {
         if (typeof PluginApi === 'undefined' || !PluginApi.GQL || !PluginApi.GQL.getConfiguration) return;
         
         PluginApi.GQL.getConfiguration().then(res => {
-            const pluginSettings = res?.data?.configuration?.plugins?.ExternalGalleryViewer || {};
+            const pluginSettings = res?.data?.configuration?.plugins?.UniversalMediaLauncher || {};
             
             try {
                 if (pluginSettings.galleries_queue) {
@@ -230,13 +230,13 @@
             return;
         }
 
-        const targetPluginId = "ExternalGalleryViewer";
+        const targetPluginId = "UniversalMediaLauncher";
         
         // CRITICAL RE-ALIGNMENT: Matches the explicit task name fields registered inside your YML
-        const targetTaskName = type === 'scenes' ? "Launch Scene Player" : "Launch External Player";
+        const targetTaskName = type === 'scenes' ? "Launch Video Player" : "Launch Image Viewer";
         const flatPayloadString = currentQueue.join(',');
         
-        console.log(`ExternalGalleryViewer: Sending execution task payload: "${targetTaskName}" with items: ${flatPayloadString}`);
+        console.log(`UniversalMediaLauncher: Sending execution task payload: "${targetTaskName}" with items: ${flatPayloadString}`);
 
         // Explicitly binds 'task_name' down both the query header and the args map wrapper
         const query = `
@@ -256,9 +256,9 @@
                 body: JSON.stringify({ query })
             });
             const data = await response.json();
-            console.log(`ExternalGalleryViewer: ${type} task execution accepted:`, data);
+            console.log(`UniversalMediaLauncher: ${type} task execution accepted:`, data);
         } catch (error) {
-            console.error(`ExternalGalleryViewer: Failed to clear execution pipe for ${type}:`, error);
+            console.error(`UniversalMediaLauncher: Failed to clear execution pipe for ${type}:`, error);
         }
     }
 
@@ -284,7 +284,7 @@
             const container = document.createElement('div');
             container.id = 'mv-picking-nav-btn';
             container.className = 'nav-item';
-            container.innerHTML = `<button class="btn btn-secondary mv-picking-toggle-btn" title="Toggle ExternalGalleryViewer Picker">${ICON_GALLERIES}</button>`;
+            container.innerHTML = `<button class="btn btn-secondary mv-picking-toggle-btn" title="Toggle UniversalMediaLauncher Picker">${ICON_GALLERIES}</button>`;
             
             container.querySelector('button').addEventListener('click', togglePickingMode);
             navRight.prepend(container);
@@ -296,7 +296,7 @@
             const btn = document.createElement('button');
             btn.id = 'mv-picking-standalone';
             btn.className = 'btn btn-secondary mv-picking-toggle-btn';
-            btn.title = 'Toggle ExternalGalleryViewer Picker';
+            btn.title = 'Toggle UniversalMediaLauncher Picker';
             btn.innerHTML = ICON_GALLERIES;
             btn.addEventListener('click', togglePickingMode);
             document.body.appendChild(btn);
@@ -367,18 +367,6 @@
 
     syncFromStashConfig();
     onNavigate();
-
-/*     if (typeof PluginApi !== 'undefined' && PluginApi.register && PluginApi.register.pluginSetting) {
-        PluginApi.register.pluginSetting({
-            plugin_id: "ExternalGalleryViewer",
-            setting_name: "viewer_path",
-            type: "string",
-            label: "External Viewer Application Path",
-            description: "Provide the absolute system path to your image viewer application executable binary (e.g., C:\\Program Files\\FastStone Image Viewer\\FSViewer.exe). Default is 'explorer'.",
-            default_value: "explorer"
-        });
-        console.log("ExternalGalleryViewer: Native UI plugin path input setting panel registered successfully.");
-    } */
     
 })();
 

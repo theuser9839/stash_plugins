@@ -1,5 +1,5 @@
-name: "External Gallery Viewer"
-description: "Advanced gallery viewing overlay with playlist docking"
+name: "Universal Media Launcher"
+description: "Creates playlists to view galleries and scenes directly into the user selected native desktop applications."
 version: "1.0.0"
 
 exec:
@@ -16,14 +16,14 @@ ui:
 
 
 tasks:
-  - name: "Launch External Player"
-    description: "Spawns the local desktop gallery viewer application"
-  - name: "Launch Scene Player"
+  - name: "Launch Image Viewer"
+    description: "Spawns the local desktop image viewer application"
+  - name: "Launch Video Player"
     description: "Spawns the local desktop video player application"
     
 settings:
   viewer_path:
-    displayName: "External Viewer Application Path"
+    displayName: "External Image Viewer Application Path"
     type: STRING
   player_path:
     displayName: "External Video Player Application Path"
