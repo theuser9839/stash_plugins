@@ -103,85 +103,107 @@ body:not(.mv-picking-mode) .mv-add-btn {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
-/* ── Floating launcher ─────────────────────────────────────────────────────── */
+/* ── Dual Floating Launcher Panel ─────────────────────────────────────────── */
 
 #mv-launcher {
     position: fixed;
     bottom: 24px;
     right: 24px;
     z-index: 9999;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-around !important;
+    gap: 12px !important;
     background: var(--mv-chrome-bg);
     border: 1px solid var(--mv-border);
-    border-radius: 10px;
-    padding: 6px 8px;
+    border-radius: 30px !important; /* Premium rounded pill profile */
+    padding: 6px 16px !important;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 }
 
-#mv-open-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--mv-accent);
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    width: 30px;
-    height: 30px;
-    padding: 0;
-    cursor: pointer;
-    flex-shrink: 0;
+.mv-launcher-section {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
 }
 
-#mv-open-btn:hover {
-    background: var(--mv-accent-hover);
+.mv-launcher-divider {
+    width: 1px !important;
+    height: 20px !important;
+    background-color: var(--mv-border) !important;
+    margin: 0 4px !important;
 }
 
-#mv-open-btn svg {
-    width: 15px;
-    height: 15px;
+/* Base style alignments for the inline operational dashboard button stubs */
+.mv-launch-trigger-btn, 
+.mv-clear-trigger-btn, 
+.mv-close-system-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    cursor: pointer !important;
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 6px !important;
+    line-height: 1 !important;
 }
 
+/* Player Trigger Buttons Style Rules */
+.mv-launch-trigger-btn {
+    background: var(--mv-accent) !important;
+    color: #fff !important;
+}
+
+.mv-launch-trigger-btn:hover {
+    background: var(--mv-accent-hover) !important;
+    transform: scale(1.05);
+}
+
+.mv-launch-trigger-btn svg {
+    width: 15px !important;
+    height: 15px !important;
+}
+
+/* Consolidated Playlist Item Metric Count Badges */
 .mv-launcher-count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 5px;
-    min-width: 30px;
-    height: 30px;
-    padding: 0 8px;
-    font-size: 14px;
-    font-weight: 700;
-    background: #2a2a2a;
-    color: #ccc;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 5px !important;
+    min-width: 26px !important;
+    height: 26px !important;
+    padding: 0 6px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    background: #2a2a2a !important;
+    color: #ccc !important;
 }
 
-.mv-launcher-filter-count {
-    background: var(--mv-accent-tint);
-    color: var(--mv-accent);
+/* Active Clear/Reset Queue Action Toggles (&times;) */
+.mv-clear-trigger-btn {
+    color: #666 !important;
+    font-size: 18px !important;
 }
 
-#mv-clear-queue {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    color: #666;
-    border: none;
-    width: 30px;
-    height: 30px;
-    padding: 0;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 5px;
-    line-height: 1;
+.mv-clear-trigger-btn:hover {
+    color: #ff4444 !important; /* Error red highlights for array resets */
+    background: rgba(255, 68, 68, 0.1) !important;
 }
 
-#mv-clear-queue:hover {
-    color: #fff;
-    background: var(--mv-border);
+/* Unified Operational Close Cross Identifier Hook (&#x2715;) */
+.mv-close-system-btn {
+    color: #555 !important;
+    font-size: 12px !important;
+    width: 24px !important;
+    height: 24px !important;
+}
+
+.mv-close-system-btn:hover {
+    color: #fff !important;
+    background: var(--mv-border) !important;
 }
 
 /* ── Filter add button ─────────────────────────────────────────────────────── */

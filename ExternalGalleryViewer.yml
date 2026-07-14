@@ -14,11 +14,17 @@ ui:
   css:
     - frontend/main.css
 
+
 tasks:
   - name: "Launch External Player"
-    description: "Spawns the local desktop viewer application"
-
+    description: "Spawns the local desktop gallery viewer application"
+  - name: "Launch Scene Player"
+    description: "Spawns the local desktop video player application"
+    
 settings:
   viewer_path:
     displayName: "External Viewer Application Path"
+    type: STRING
+  player_path:
+    displayName: "External Video Player Application Path"
     type: STRING

@@ -5,15 +5,15 @@ import subprocess
 import tempfile
 import json
 import urllib.request
-from stashapi.stashapp import StashInterface
 
 # =========================================================================
 # CONFIGURATION TARGETS
 # =========================================================================
+# DYNAMIC PATH COUPLING: Python live-fetches these paths directly from your Stash settings!
 VIRTUAL_BASE_DIR = os.path.join(tempfile.gettempdir(), "StashVirtualGalleries")
 
-def fetch_stash_custom_viewer_setting():
-    """Queries Stash's native plugin settings tree to pull the custom path dynamically"""
+def fetch_stash_custom_setting(setting_key):
+    """Queries Stash's native plugin settings tree to pull user paths dynamically"""
     gql_query = '{ configuration { plugins } }'
     req_payload = {"query": gql_query}
     
@@ -26,13 +26,10 @@ def fetch_stash_custom_viewer_setting():
             res_json = json.loads(response.read().decode('utf-8'))
             plugins_config = res_json.get("data", {}).get("configuration", {}).get("plugins", {})
             
-            # Extract the setting out of your ExternalGalleryViewer configuration map
             viewer_config = plugins_config.get("ExternalGalleryViewer", {})
-            viewer_path = viewer_config.get("viewer_path", "explorer")
-            
-            return viewer_path.strip() if viewer_path else "explorer"
+            return viewer_config.get(setting_key, "explorer").strip()
     except Exception as err:
-        sys.stderr.write(f"ExternalGalleryViewer: Setting fetch lookup failed, falling back to explorer: {str(err)}\n")
+        sys.stderr.write(f"ExternalGalleryViewer: Setting fetch lookup failed for {setting_key}: {str(err)}\n")
         
     return "explorer"
 
@@ -53,11 +50,9 @@ def create_shortcut_link(source_real_path, index, gallery_title):
 
     try:
         if os.name == 'nt':
-            # WINDOWS: Uses directory junctions to bypass local user access limitations
             subprocess.run(['cmd', '/c', 'mklink', '/j', virtual_target_path, source_real_path],
                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         else:
-            # LINUX / MACOS standard symbol linking fallback
             os.symlink(source_real_path, virtual_target_path, target_is_directory=True)
         return True
     except Exception as e:
@@ -81,8 +76,11 @@ def query_stash_raw_graphql(query, variables=None):
         sys.stderr.write(f"ExternalGalleryViewer: Raw GraphQL Fetch Error: {str(e)}\n")
         return {}
 
+# =========================================================================
+# PIPELINE A: GALLERIES FORK (UNCHANGED)
+# =========================================================================
 def open_viewer(gallery_ids, input_data):
-    """Core Entrypoint: Resolves gallery paths from database and spawns Windows Explorer."""
+    """Resolves gallery paths from database and spawns your Image Viewer application."""
     if not gallery_ids:
         return {"status": "success", "output": "Queue payload package was empty."}
 
@@ -94,12 +92,8 @@ def open_viewer(gallery_ids, input_data):
         findGallery(id: $id) {
             id
             title
-            files {
-                path
-            }
-            folder {
-                path
-            }
+            files { path }
+            folder { path }
         }
     }
     """
@@ -124,41 +118,86 @@ def open_viewer(gallery_ids, input_data):
                 folder_basename = os.path.basename(real_folder_path.rstrip(os.sep))
                 gallery_title = folder_basename if folder_basename else f"Gallery_{gallery_id}"
 
-            sys.stderr.write(f"ExternalGalleryViewer: Mapping ID {gallery_id} -> Path: {real_folder_path} (Name: {gallery_title})\n")
+            sys.stderr.write(f"ExternalGalleryViewer: Mapping Gallery ID {gallery_id} -> Path: {real_folder_path}\n")
 
             if real_folder_path and os.path.exists(real_folder_path):
                 if create_shortcut_link(real_folder_path, index, gallery_title):
                     links_created_count += 1
-            else:
-                sys.stderr.write(f"ExternalGalleryViewer: Path does not exist or is inaccessible: {real_folder_path}\n")
-
         except Exception as err:
-            sys.stderr.write(f"Error compiling properties for ID {gallery_id}: {str(err)}\n")
+            sys.stderr.write(f"Error compiling properties for gallery ID {gallery_id}: {str(err)}\n")
 
     if links_created_count == 0:
-        return {"status": "error", "output": "No items successfully mapped to disk folders."}
+        return {"status": "error", "output": "No gallery items successfully mapped to disk folders."}
 
-    # =========================================================================
-    # DYNAMIC VIEWER PATH EVALUATION
-    # =========================================================================
-    VIEWER_PATH = fetch_stash_custom_viewer_setting()
-    sys.stderr.write(f"ExternalGalleryViewer: Activating viewer target path: '{VIEWER_PATH}'\n")
-
+    VIEWER_PATH = fetch_stash_custom_setting("viewer_path")
     try:
-        if os.name == 'nt':
-            if VIEWER_PATH and VIEWER_PATH != "explorer" and os.path.exists(VIEWER_PATH):
-                subprocess.Popen([VIEWER_PATH, VIRTUAL_BASE_DIR])
-                sys.stderr.write(f"ExternalGalleryViewer: Launched custom viewer: {VIEWER_PATH}\n")
-            else:
-                if VIEWER_PATH and VIEWER_PATH != "explorer":
-                    sys.stderr.write(f"Warning: Target path not found on disk: {VIEWER_PATH}. Falling back to Explorer.\n")
-                subprocess.Popen(f'explorer.exe "{VIRTUAL_BASE_DIR}"', shell=True)
+        if os.name == 'nt' and VIEWER_PATH and VIEWER_PATH != "explorer" and os.path.exists(VIEWER_PATH):
+            subprocess.Popen([VIEWER_PATH, VIRTUAL_BASE_DIR])
         else:
-            subprocess.Popen([VIEWER_PATH, VIRTUAL_BASE_DIR], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                         
-        return {
-            "status": "success", 
-            "output": f"Virtual folder populated with {links_created_count} items and launched."
+            subprocess.Popen(f'explorer.exe "{VIRTUAL_BASE_DIR}"', shell=True)
+        return {"status": "success", "output": "Galleries folder launched."}
+    except Exception as e:
+        return {"status": "error", "output": f"Failed to execute image viewer: {str(e)}"}
+
+# =========================================================================
+# PIPELINE B: SCENES FORK (NEW VIDEO APPLICATION LAUNCHER)
+# =========================================================================
+def open_scene_player(scene_ids, input_data):
+    """Resolves absolute video file paths from database and passes them straight to your media player."""
+    if not scene_ids:
+        return {"status": "success", "output": "Scene playlist queue payload package was empty."}
+
+    # Fetch your active chosen video player string setting live from the DB on execution tick
+    PLAYER_PATH = fetch_stash_custom_setting("player_path")
+    sys.stderr.write(f"ExternalGalleryViewer: Target Video Player Path: '{PLAYER_PATH}'\n")
+
+    if not PLAYER_PATH or PLAYER_PATH == "explorer":
+        return {"status": "error", "output": "Please configure your External Video Player Application Path in Stash settings first!"}
+
+    # Target the 'files' schema sub-node to extract absolute video tracks locations
+    gql_query = """
+    query FindScene($id: ID!) {
+        findScene(id: $id) {
+            id
+            title
+            files {
+                path
+            }
         }
+    }
+    """
+
+    video_files_to_play = []
+
+    for scene_id in scene_ids:
+        try:
+            res_json = query_stash_raw_graphql(gql_query, {"id": str(scene_id)})
+            scene_node = res_json.get("data", {}).get("findScene") or {}
+
+            if scene_node and scene_node.get("files"):
+                # Scenes store their files in an array list wrapper
+                for file_node in scene_node["files"]:
+                    file_path = file_node.get("path")
+                    if file_path and os.path.exists(file_path):
+                        video_files_to_play.append(file_path)
+                        sys.stderr.write(f"ExternalGalleryViewer: Resolved Scene ID {scene_id} -> Video File: {file_path}\n")
+                        break # Grab the primary file item and step onto the next scene ID
+        except Exception as err:
+            sys.stderr.write(f"Error resolving file track for scene ID {scene_id}: {str(err)}\n")
+
+    if not video_files_to_play:
+        return {"status": "error", "output": "No video paths successfully found or accessible on local drives."}
+
+    # Execute your favorite media player (MPV, MPC-HC, VLC) passing the entire file track collection at once!
+    try:
+        if os.path.exists(PLAYER_PATH):
+            # Passes the list of file strings directly into the executable process asynchronously
+            execution_args = [PLAYER_PATH] + video_files_to_play
+            subprocess.Popen(execution_args)
+            sys.stderr.write(f"ExternalGalleryViewer: Successfully spawned video player process container targeting {len(video_files_to_play)} videos.\n")
+            return {"status": "success", "output": f"Launched video player with {len(video_files_to_play)} items."}
+        else:
+            sys.stderr.write(f"Error: Configured video player application binary not found on disk: {PLAYER_PATH}\n")
+            return {"status": "error", "output": f"Video player path not found on disk: {PLAYER_PATH}"}
     except Exception as launch_err:
-        return {"status": "error", "output": f"Failed to execute path viewer: {str(launch_err)}"}
+        return {"status": "error", "output": f"Video application initialization crashed: {str(launch_err)}"}
