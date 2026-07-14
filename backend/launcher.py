@@ -7,6 +7,12 @@ import json
 import urllib.request
 import logging
 
+
+# =========================================================================
+# GLOBAL RUNTIME CONFIG: Dynamically updated by main.py on execution tick
+# =========================================================================
+STASH_PORT = 9999
+STASH_COOKIE = None
 # =========================================================================
 # CONFIGURATION TARGETS
 # =========================================================================
@@ -14,15 +20,18 @@ import logging
 VIRTUAL_BASE_DIR = os.path.join(tempfile.gettempdir(), "StashVirtualGalleries")
 logger = logging.getLogger('UniversalMediaLauncher')
 
+
+
 def fetch_stash_custom_setting(setting_key):
     """Queries Stash's native plugin settings tree to pull user paths dynamically"""
     gql_query = '{ configuration { plugins } }'
     req_payload = {"query": gql_query}
     
-    url = "http://localhost:9999/graphql"
+    url = f"http://localhost:{STASH_PORT}/graphql"
     headers = {"Content-Type": "application/json"}
     req = urllib.request.Request(url, data=json.dumps(req_payload).encode('utf-8'), headers=headers)
-    
+    if STASH_COOKIE:
+        req.add_header('Cookie', STASH_COOKIE)
     try:
         with urllib.request.urlopen(req) as response:
             res_json = json.loads(response.read().decode('utf-8'))
@@ -69,10 +78,11 @@ def query_stash_raw_graphql(query, variables=None):
     if variables:
         req_payload["variables"] = variables
         
-    url = "http://localhost:9999/graphql"
+    url = f"http://localhost:{STASH_PORT}/graphql"
     headers = {"Content-Type": "application/json"}
     req = urllib.request.Request(url, data=json.dumps(req_payload).encode('utf-8'), headers=headers)
-    
+    if STASH_COOKIE:
+        req.add_header('Cookie', STASH_COOKIE)
     try:
         with urllib.request.urlopen(req) as response:
             return json.loads(response.read().decode('utf-8'))
@@ -139,16 +149,33 @@ def open_viewer(gallery_ids, input_data):
         return {"status": "error", "output": "No gallery items successfully mapped to disk folders."}
 
     VIEWER_PATH = fetch_stash_custom_setting("viewer_path")
+    
     try:
-        if os.name == 'nt' and VIEWER_PATH and VIEWER_PATH != "explorer" and os.path.exists(VIEWER_PATH):
-            subprocess.Popen([VIEWER_PATH, VIRTUAL_BASE_DIR])
-            logger.info("Image viewer application process triggered successfully.")
-
+        # =========================================================================
+        # CROSS-PLATFORM IMAGE VIEWER DISPATCH
+        # =========================================================================
+        if os.name == 'nt':
+            # Windows execution branch
+            if VIEWER_PATH and VIEWER_PATH != "explorer" and os.path.exists(VIEWER_PATH):
+                subprocess.Popen([VIEWER_PATH, VIRTUAL_BASE_DIR])
+            else:
+                subprocess.Popen(f'explorer.exe "{VIRTUAL_BASE_DIR}"', shell=True)
         else:
-            subprocess.Popen(f'explorer.exe "{VIRTUAL_BASE_DIR}"', shell=True)
+            # Linux / WSL execution branch (Corrected to dynamically check the settings)
+            if VIEWER_PATH and VIEWER_PATH != "explorer":
+                # Safely split strings into executable argument arrays on Linux
+                # Handles complex commands or native binary executions cleanly
+                subprocess.Popen([VIEWER_PATH, VIRTUAL_BASE_DIR])
+            else:
+                # Default Linux desktop open handler fallback
+                subprocess.Popen(['xdg-open', VIRTUAL_BASE_DIR])
+                
         return {"status": "success", "output": "Galleries folder launched."}
+        
     except Exception as e:
+        sys.stderr.write(f"[UniversalMediaLauncher] [CRITICAL] Failed to execute image viewer: {str(e)}\n")
         return {"status": "error", "output": f"Failed to execute image viewer: {str(e)}"}
+
 
 # =========================================================================
 # PIPELINE B: SCENES FORK (NEW VIDEO APPLICATION LAUNCHER)
@@ -202,17 +229,38 @@ def open_scene_player(scene_ids, input_data):
         return {"status": "error", "output": "No video paths successfully found or accessible on local drives."}
 
     # Execute your favorite media player (MPV, MPC-HC, VLC) passing the entire file track collection at once!
-    try:
-        if os.path.exists(PLAYER_PATH):
-            # Passes the list of file strings directly into the executable process asynchronously
-            execution_args = [PLAYER_PATH] + video_files_to_play
-            subprocess.Popen(execution_args)
-            logger.info(f"Successfully spawned media player process targeting {len(video_files_to_play)} video files.")
+    # =========================================================================
+    # CROSS-PLATFORM BINARY PATH CHECKER
+    # =========================================================================
+    # shutil.which() intelligently checks absolute disk paths AND searches 
+    # global system environment paths natively on both Windows and Linux!
+    resolved_player_path = shutil.which(PLAYER_PATH)
 
+    try:
+        if resolved_player_path:
+            # Pass the fully resolved system path to the execution sub-process
+            execution_args = [resolved_player_path] + video_files_to_play
+             # =========================================================================
+            # STDOUT/STDERR DISCONNECT: Route standard output straight to os.devnull
+            # =========================================================================
+            # This completely detaches the player's terminal console logs from Stash,
+            # silencing the progress tickers and preventing the red error messages!
+            with open(os.devnull, 'wb') as devnull:
+                subprocess.Popen(
+                    execution_args,
+                    stdout=devnull,
+                    stderr=devnull,
+                    close_fds=True # Safe process decoupling guard
+                )
+            
+            logger.info(f"Successfully spawned media player process targeting {len(video_files_to_play)} video files.")
             return {"status": "success", "output": f"Launched video player with {len(video_files_to_play)} items."}
         else:
-            sys.stderr.write(f"Error: Configured video player application binary not found on disk: {PLAYER_PATH}\n")
-            logger.error(f"Video player executable path not found on disk drive partition: {PLAYER_PATH}")
+            sys.stderr.write(f"Configured video player application binary not found on disk: {PLAYER_PATH}")
+            logger.error(f"Configured video player application binary not found on disk: {PLAYER_PATH}")
             return {"status": "error", "output": f"Video player path not found on disk: {PLAYER_PATH}"}
+            
     except Exception as launch_err:
+        sys.stderr.write(f"[UniversalMediaLauncher] [CRITICAL] Video application initialization crashed: {str(launch_err)}\n")
         return {"status": "error", "output": f"Video application initialization crashed: {str(launch_err)}"}
+

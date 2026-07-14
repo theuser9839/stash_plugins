@@ -30,6 +30,20 @@ def main():
         sys.stderr.write(f"[UniversalMediaLauncher] [ERROR] Failed to read or parse standard input: {str(e)}\n")
         input_data = {}
 
+    # =========================================================================
+    # DYNAMIC LAYER HANDSHAKE: Configure launcher's network context at runtime
+    # =========================================================================
+    server_info = input_data.get("server_connection", {})
+    if server_info:
+        # Extract the port Stash is currently running on (e.g., 9998 inside WSL)
+        launcher.STASH_PORT = server_info.get("Port", 9999)
+        
+        # Capture the authorization session cookie so requests never get locked out
+        cookie_info = server_info.get("SessionCookie", {})
+        if cookie_info and cookie_info.get("Name") and cookie_info.get("Value"):
+            launcher.STASH_COOKIE = f"{cookie_info['Name']}={cookie_info['Value']}"
+    # =========================================================================
+
     # Read the active task name parameter from every potential Stash query slot
     task_name = input_data.get("task")
     if not task_name or task_name == "None":
