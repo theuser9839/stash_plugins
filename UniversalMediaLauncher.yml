@@ -27,9 +27,12 @@ settings:
   viewer_path:
     displayName: "External Image Viewer Application Path"
     type: STRING
+    description: Full paths to the appplications or environment variables are supported
   player_path:
     displayName: "External Video Player Application Path"
     type: STRING
+    description: Full paths to the appplications or environment variables are supported
   clean_on_exit:
     displayName: "Clean virtual folders when picker closes"
     type: BOOLEAN
+    
