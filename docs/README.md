@@ -70,8 +70,8 @@ Universal Media Launcher features native system fallbacks. To change your viewin
 ###❌
 
 ## TODO
-[x] 
-[ ] toggle button is bleeding to the scene view and it covers a part of the video player.
+[ ] Add Clean up task for virtual folders
+[x] toggle button is bleeding to the scene view and it covers a part of the video player.
 [x] add a standard logging to a text file like the renamer plugin does.
-[x]Lock your clean logging file engine into your Python workspace scripts.
-[ ]Polish frontend/main.css to add that premium fade-in and scale hover animation layer to the golden launcher widget so it slides open like high-end desktop software.
+[x] Lock your clean logging file engine into your Python workspace scripts.
+[x] Polish frontend/main.css to add that premium fade-in and scale hover animation layer to the golden launcher widget so it slides open like high-end desktop software.
