@@ -20,6 +20,8 @@ tasks:
     description: "Spawns the local desktop image viewer application"
   - name: "Launch Video Player"
     description: "Spawns the local desktop video player application"
+  - name: "Wipe Virtual Folders"
+    description: "Clears out the temporary virtual directory shortcuts from disk"
     
 settings:
   viewer_path:
@@ -28,3 +30,6 @@ settings:
   player_path:
     displayName: "External Video Player Application Path"
     type: STRING
+  clean_on_exit:
+    displayName: "Clean virtual folders when picker closes"
+    type: BOOLEAN

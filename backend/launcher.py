@@ -86,6 +86,7 @@ def query_stash_raw_graphql(query, variables=None):
 # =========================================================================
 def open_viewer(gallery_ids, input_data):
     """Resolves gallery paths from database and spawns your Image Viewer application."""
+    
     if not gallery_ids:
         logger.warning("open_viewer executed with an empty gallery list array.")
         return {"status": "success", "output": "Queue payload package was empty."}

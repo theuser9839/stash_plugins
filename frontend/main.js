@@ -1,5 +1,6 @@
 (function() {
     'use strict';
+    let cleanOnExitSetting = false; // Runtime toggle memory cache
 
     // =========================================================================
     // AUTHORITATIVE PERSISTENT DUAL STORAGE KEYS
@@ -62,7 +63,14 @@
         document.body.classList.toggle('mv-picking-mode', val);
         updatePickingToggleButtons();
         updateLauncher();
-        if (val) injectCardButtons();
+        if (val) {
+            injectCardButtons();
+        } else {
+            console.log("UniversalMediaLauncher: Picker closing. Checking clean_on_exit switch: ", cleanOnExitSetting);
+            if (cleanOnExitSetting) {
+                dispatchCleanupTask();
+            }
+        }
     }
 
     // =========================================================================
@@ -82,25 +90,101 @@
         }).catch(err => console.error("UniversalMediaLauncher: Persistent database commit failed:", err));
     }
 
-    function syncFromStashConfig() {
-        if (typeof PluginApi === 'undefined' || !PluginApi.GQL || !PluginApi.GQL.getConfiguration) return;
+    // =========================================================================
+    // BACKGROUND AUTOMATION: Passes a minor dummy key to force Stash task routing
+    // =========================================================================
+    async function dispatchCleanupTask() {
+        const targetPluginId = "UniversalMediaLauncher";
+        const targetTaskName = "Wipe Virtual Folders"; 
         
-        PluginApi.GQL.getConfiguration().then(res => {
-            const pluginSettings = res?.data?.configuration?.plugins?.UniversalMediaLauncher || {};
-            
-            try {
-                if (pluginSettings.galleries_queue) {
-                    localStorage.setItem(KEY_GALLERIES, pluginSettings.galleries_queue);
-                }
-                if (pluginSettings.scenes_queue) {
-                    localStorage.setItem(KEY_SCENES, pluginSettings.scenes_queue);
-                }
-            } catch (e) {}
+        // Passing a small placeholder parameter forces Stash to retain your task name string!
+        const query = `
+            mutation runTask {
+                runPluginTask(
+                    plugin_id: "${targetPluginId}", 
+                    task_name: "${targetTaskName}",
+                    args: [{ key: "action", value: { str: "wipe" } }]
+                )
+            }
+        `;
 
+        try {
+            await fetch('/graphql', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query })
+            });
+        } catch (error) {
+            console.error("UniversalMediaLauncher: Auto-cleanup network error:", error);
+        }
+    }
+
+
+
+
+    // =========================================================================
+    // AUTHORITATIVE BACKEND CONFIGURATION LOOKUP (RAW GRAPHQL FETCH)
+    // =========================================================================
+    function syncFromStashConfig() {
+        // Safe guard basic UI API presence
+        if (typeof PluginApi === 'undefined' || !PluginApi.GQL) return;
+
+        // Native query layout targeting Stash's unified configuration tree
+        const query = `
+            query GetPluginConfig {
+                configuration {
+                    plugins
+                }
+            }
+        `;
+
+        fetch('/graphql', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query })
+        })
+        .then(response => response.json())
+        .then(res => {
+            const allPlugins = res?.data?.configuration?.plugins || {};
+            
+            // Look up variables inside every potential directory casing variant branch
+            let pluginSettings = allPlugins.UniversalMediaLauncher || 
+                                 allPlugins.universalmedialauncher || 
+                                 allPlugins["universal-media-launcher"] || {};
+
+            // Fallback: Loop keys manually if Stash caches the object case-insensitively
+            if (Object.keys(pluginSettings).length === 0) {
+                for (const key in allPlugins) {
+                    if (key.toLowerCase() === "universalmedialauncher") {
+                        pluginSettings = allPlugins[key];
+                        break;
+                    }
+                }
+            }
+
+            try {
+                // Keep local browser memory caches mirrored
+                if (pluginSettings.galleries_queue) localStorage.setItem(KEY_GALLERIES, pluginSettings.galleries_queue);
+                if (pluginSettings.scenes_queue) localStorage.setItem(KEY_SCENES, pluginSettings.scenes_queue);
+                
+                // CRITICAL EXTRACTION: Cast and verify boolean checkbox primitive bits
+                cleanOnExitSetting = pluginSettings.clean_on_exit === true || 
+                                     pluginSettings.clean_on_exit === "true" || 
+                                     pluginSettings.clean_on_exit === 1;
+
+                console.log("UniversalMediaLauncher: Local settings synced successfully. clean_on_exit is:", cleanOnExitSetting);
+            } catch (e) {
+                console.error("UniversalMediaLauncher: Initialization mapping error:", e);
+            }
+
+            // Trigger real-time UI element color card refreshes
             updateAllButtons();
             updateLauncher();
-        });
+        })
+        .catch(err => console.error("UniversalMediaLauncher: Failed to query backend plugin configurations:", err));
     }
+
+
 
     // =========================================================================
     // DYNAMIC INTERFACE COMPONENT BUILDERS (DOM Injection)
