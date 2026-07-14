@@ -2,9 +2,19 @@ import sys
 import json
 import os
 import re
+import logging
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import launcher
+
+PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
+LOG_FILE_PATH = os.path.join(os.path.dirname(PLUGIN_DIR), "UniversalMediaLauncher.log")
+logging.basicConfig(
+    filename=LOG_FILE_PATH,
+    level=logging.DEBUG, # Captures DEBUG, INFO, WARNING, and ERROR metrics
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
 
 def main():
     try:
@@ -12,6 +22,7 @@ def main():
         input_data = json.loads(raw_input)
     except Exception as e:
         sys.stderr.write(f"UniversalMediaLauncher: Failed to parse stdin JSON: {str(e)}\n")
+        logging.error(f"Failed to parse stdin JSON payload: {str(e)}")
         input_data = {}
 
     # =========================================================================
@@ -46,7 +57,7 @@ def main():
     # =========================================================================
     # SYSTEM ROUTING FORK: Clean task separation based strictly on name
     # =========================================================================
-    sys.stderr.write(f"[DEBUG] [UniversalMediaLauncher] Processing task '{task_name}' for {len(args_payload)} items.\n")
+    logging.info(f"Processing task '{task_name}' for item IDs: {args_payload}")
     response = {"status": "error", "output": f"Unknown or unhandled task: '{task_name}'"}
 
     if task_name == "Launch Image Viewer":
