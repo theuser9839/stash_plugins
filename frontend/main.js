@@ -292,32 +292,73 @@
         setPickingMode(!getPickingMode());
     }
 
+    // =========================================================================
+    // NAVBAR INTEGRATION: Centers the picker toggle right next to the zoom slider
+    // =========================================================================
     function injectPickingControls() {
-        // Top Toolbar Integration Hook
-        const navRight = document.querySelector('.navbar-right, .nav-tabs');
-        if (navRight && !document.getElementById('mv-picking-nav-btn')) {
-            const container = document.createElement('div');
-            container.id = 'mv-picking-nav-btn';
-            container.className = 'nav-item';
-            container.innerHTML = `<button class="btn btn-secondary mv-picking-toggle-btn" title="Toggle UniversalMediaLauncher Picker">${ICON_GALLERIES}</button>`;
+        // Prevent double injection handles
+        if (document.getElementById('mv-picking-nav-btn')) return;
+
+        // 1. ANCHOR SEARCH: Find Stash's native grid zoom slider toolbar wrapper block
+        // Stash places the zoom slider inside a parent element matching these exact layout grids
+        const zoomSliderContainer = document.querySelector('.zoom-slider, [class*="zoom-slider"]');
+        const toolbarContainer = document.querySelector('.navbar-right, .nav-tabs, .filter-bar-right, .zoom-slider-container');
+
+        if (toolbarContainer) {
+            // Build a matching Stash layout block wrapper to preserve the flex align spacing
+            const wrapper = document.createElement('div');
+            wrapper.id = 'mv-picking-nav-btn';
             
-            container.querySelector('button').addEventListener('click', togglePickingMode);
-            navRight.prepend(container);
+            // Adding '.btn-group' and '.mx-md-1' aligns it identically with Stash's native tool buttons
+            wrapper.className = 'btn-group mx-md-1 nav-item'; 
+            wrapper.innerHTML = `
+                <button class="btn btn-secondary mv-picking-toggle-btn" title="Toggle UniversalMediaLauncher Picker">
+                    ${ICON_GALLERIES}
+                </button>
+            `;
+            
+            // Set up the click interactive state switcher
+            wrapper.querySelector('button').addEventListener('click', togglePickingMode);
+
+            // =========================================================================
+            // SMART PLACEMENT FORK: Locks it perfectly to the LEFT of the zoom slider!
+            // =========================================================================
+            if (zoomSliderContainer && zoomSliderContainer.parentNode === toolbarContainer) {
+                // Inserts your gold button container explicitly RIGHT BEFORE the zoom slider cell
+                toolbarContainer.insertBefore(wrapper, zoomSliderContainer);
+            } else if (zoomSliderContainer) {
+                // Fallback inside nested zoom slider wrapper boxes
+                zoomSliderContainer.parentNode.insertBefore(wrapper, zoomSliderContainer);
+            } else {
+                // Secondary safety loop fallback to append to the start of the right toolbar
+                toolbarContainer.prepend(wrapper);
+            }
         }
 
-        // Standalone Floating Fallback Button for isolated navigation grids
-        const pagination = document.querySelector('.pagination-container, .col-sm');
-        if (!pagination && !document.getElementById('mv-picking-standalone')) {
-            const btn = document.createElement('button');
-            btn.id = 'mv-picking-standalone';
-            btn.className = 'btn btn-secondary mv-picking-toggle-btn';
-            btn.title = 'Toggle UniversalMediaLauncher Picker';
-            btn.innerHTML = ICON_GALLERIES;
-            btn.addEventListener('click', togglePickingMode);
-            document.body.appendChild(btn);
-        } else if (pagination) {
-            const standalone = document.getElementById('mv-picking-standalone');
-            if (standalone) standalone.remove();
+        // =========================================================================
+        // 2. STANDALONE FALLBACK CLEANUP LOOP (PREVENTS CORNER DUPLICATES)
+        // =========================================================================
+        // If the main toolbar button was successfully mounted, we must ensure 
+        // that any floating corner button artifact is completely erased from memory!
+        const mainNavBtnExists = document.getElementById('mv-picking-nav-btn');
+        const standaloneBtn = document.getElementById('mv-picking-standalone');
+
+        if (mainNavBtnExists) {
+            // Delete the floating corner duplicate instantly if the toolbar button is active
+            if (standaloneBtn) standaloneBtn.remove();
+        } else {
+            // Only mount the floating standalone button if no native toolbar containers exist anywhere on page
+            const toolbarContainerExists = document.querySelector('.navbar-right, .nav-tabs, .filter-bar-right, .zoom-slider-container');
+            
+            if (!toolbarContainerExists && !standaloneBtn) {
+                const btn = document.createElement('button');
+                btn.id = 'mv-picking-standalone';
+                btn.className = 'btn btn-secondary mv-picking-toggle-btn';
+                btn.title = 'Toggle UniversalMediaLauncher Picker';
+                btn.innerHTML = ICON_GALLERIES;
+                btn.addEventListener('click', togglePickingMode);
+                document.body.appendChild(btn);
+            }
         }
 
         updatePickingToggleButtons();
