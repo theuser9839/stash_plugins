@@ -11,7 +11,7 @@ LOG_FILE_PATH = os.path.join(os.path.dirname(PLUGIN_DIR), "UniversalMediaLaunche
 
 logging.basicConfig(
     filename=str(LOG_FILE_PATH), 
-    level=logging.DEBUG,  # Captures DEBUG, INFO, WARNING, and ERROR metrics
+    level=logging.ERROR,  # Captures DEBUG, INFO, WARNING, and ERROR metrics
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger('UniversalMediaLauncher')

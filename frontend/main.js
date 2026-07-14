@@ -67,7 +67,7 @@
         if (val) {
             injectCardButtons();
         } else {
-            console.log("UniversalMediaLauncher: Picker closing. Checking clean_on_exit switch: ", cleanOnExitSetting);
+            // console.log("UniversalMediaLauncher: Picker closing. Checking clean_on_exit switch: ", cleanOnExitSetting);
             if (cleanOnExitSetting) {
                 dispatchCleanupTask();
             }
@@ -172,7 +172,7 @@
                                          pluginSettings.clean_on_exit === "true" || 
                                          pluginSettings.clean_on_exit === 1;
 
-                    console.log("UniversalMediaLauncher: Settings synchronized (Single Run). clean_on_exit is:", cleanOnExitSetting);
+                    // console.log("UniversalMediaLauncher: Settings synchronized (Single Run). clean_on_exit is:", cleanOnExitSetting);
                 } catch (e) {
                     console.error("UniversalMediaLauncher: Initialization mapping error:", e);
                 }
@@ -334,7 +334,7 @@
         const targetTaskName = type === 'scenes' ? "Launch Video Player" : "Launch Image Viewer";
         const flatPayloadString = currentQueue.join(',');
         
-        console.log(`UniversalMediaLauncher: Sending execution task payload: "${targetTaskName}" with items: ${flatPayloadString}`);
+        // console.log(`UniversalMediaLauncher: Sending execution task payload: "${targetTaskName}" with items: ${flatPayloadString}`);
 
         // Explicitly binds 'task_name' down both the query header and the args map wrapper
         const query = `
@@ -354,7 +354,7 @@
                 body: JSON.stringify({ query })
             });
             const data = await response.json();
-            console.log(`UniversalMediaLauncher: ${type} task execution accepted:`, data);
+            // console.log(`UniversalMediaLauncher: ${type} task execution accepted:`, data);
         } catch (error) {
             console.error(`UniversalMediaLauncher: Failed to clear execution pipe for ${type}:`, error);
         }
@@ -477,7 +477,7 @@
             if (getPickingMode()) injectCardButtons();
         }
         if (e.key && (e.key.includes("UniversalMediaLauncher") || e.key.includes("clean_on_exit"))) {
-            console.log("UniversalMediaLauncher: True configuration mutation recorded. Synchronizing...");
+            // console.log("UniversalMediaLauncher: True configuration mutation recorded. Synchronizing...");
             syncFromStashConfig();
         }
     });
