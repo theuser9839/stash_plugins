@@ -8,10 +8,6 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import launcher
 
 
-
-#backend_dir = Path(__file__).resolve().parent
-#LOG_FILE_PATH = backend_dir / 'UniversalMediaLauncher.log'
-
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE_PATH = os.path.join(os.path.dirname(PLUGIN_DIR), "UniversalMediaLauncher.log")
 
