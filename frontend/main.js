@@ -1,7 +1,7 @@
 (function() {
     'use strict';
     let cleanOnExitSetting = false; // Runtime toggle memory cache
-
+    let syncDebounceTimer = null;
     // =========================================================================
     // AUTHORITATIVE PERSISTENT DUAL STORAGE KEYS
     // =========================================================================
@@ -123,67 +123,65 @@
 
 
     // =========================================================================
-    // AUTHORITATIVE BACKEND CONFIGURATION LOOKUP (RAW GRAPHQL FETCH)
+    // AUTHORITATIVE BACKEND CONFIGURATION LOOKUP (DEBOUCED SINGLE-RUN)
     // =========================================================================
     function syncFromStashConfig() {
-        // Safe guard basic UI API presence
         if (typeof PluginApi === 'undefined' || !PluginApi.GQL) return;
 
-        // Native query layout targeting Stash's unified configuration tree
-        const query = `
-            query GetPluginConfig {
-                configuration {
-                    plugins
-                }
-            }
-        `;
+        // DEBOUNCE BLOCKER: Clear any pending duplicate request hitting within the window
+        clearTimeout(syncDebounceTimer);
 
-        fetch('/graphql', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query })
-        })
-        .then(response => response.json())
-        .then(res => {
-            const allPlugins = res?.data?.configuration?.plugins || {};
-            
-            // Look up variables inside every potential directory casing variant branch
-            let pluginSettings = allPlugins.UniversalMediaLauncher || 
-                                 allPlugins.universalmedialauncher || 
-                                 allPlugins["universal-media-launcher"] || {};
-
-            // Fallback: Loop keys manually if Stash caches the object case-insensitively
-            if (Object.keys(pluginSettings).length === 0) {
-                for (const key in allPlugins) {
-                    if (key.toLowerCase() === "universalmedialauncher") {
-                        pluginSettings = allPlugins[key];
-                        break;
+        // Queue the actual execution to run after a minute 50ms stabilization window
+        syncDebounceTimer = setTimeout(() => {
+            const query = `
+                query GetPluginConfig {
+                    configuration {
+                        plugins
                     }
                 }
-            }
+            `;
 
-            try {
-                // Keep local browser memory caches mirrored
-                if (pluginSettings.galleries_queue) localStorage.setItem(KEY_GALLERIES, pluginSettings.galleries_queue);
-                if (pluginSettings.scenes_queue) localStorage.setItem(KEY_SCENES, pluginSettings.scenes_queue);
+            fetch('/graphql', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query })
+            })
+            .then(response => response.json())
+            .then(res => {
+                const allPlugins = res?.data?.configuration?.plugins || {};
                 
-                // CRITICAL EXTRACTION: Cast and verify boolean checkbox primitive bits
-                cleanOnExitSetting = pluginSettings.clean_on_exit === true || 
-                                     pluginSettings.clean_on_exit === "true" || 
-                                     pluginSettings.clean_on_exit === 1;
+                let pluginSettings = allPlugins.UniversalMediaLauncher || 
+                                     allPlugins.universalmedialauncher || 
+                                     allPlugins["universal-media-launcher"] || {};
 
-                console.log("UniversalMediaLauncher: Local settings synced successfully. clean_on_exit is:", cleanOnExitSetting);
-            } catch (e) {
-                console.error("UniversalMediaLauncher: Initialization mapping error:", e);
-            }
+                if (Object.keys(pluginSettings).length === 0) {
+                    for (const key in allPlugins) {
+                        if (key.toLowerCase() === "universalmedialauncher") {
+                            pluginSettings = allPlugins[key];
+                            break;
+                        }
+                    }
+                }
 
-            // Trigger real-time UI element color card refreshes
-            updateAllButtons();
-            updateLauncher();
-        })
-        .catch(err => console.error("UniversalMediaLauncher: Failed to query backend plugin configurations:", err));
+                try {
+                    if (pluginSettings.galleries_queue) localStorage.setItem(KEY_GALLERIES, pluginSettings.galleries_queue);
+                    if (pluginSettings.scenes_queue) localStorage.setItem(KEY_SCENES, pluginSettings.scenes_queue);
+                    
+                    cleanOnExitSetting = pluginSettings.clean_on_exit === true || 
+                                         pluginSettings.clean_on_exit === "true" || 
+                                         pluginSettings.clean_on_exit === 1;
+
+                    console.log("UniversalMediaLauncher: Settings synchronized (Single Run). clean_on_exit is:", cleanOnExitSetting);
+                } catch (e) {
+                    console.error("UniversalMediaLauncher: Initialization mapping error:", e);
+                }
+
+                updateAllButtons();
+                updateLauncher();
+            })
+            .catch(err => console.error("UniversalMediaLauncher: Failed to query backend configs:", err));
+        }, 50); // 50ms is the perfect sweet-spot window to squash rapid dual SPA triggers
     }
-
 
 
     // =========================================================================
@@ -453,11 +451,12 @@
         document.querySelectorAll('.mv-add-btn').forEach(el => el.remove());
 
         setTimeout(() => {
+            syncFromStashConfig(); 
             injectPickingControls();
             injectCardButtons();
             updateLauncher();
             if (getPickingMode()) document.body.classList.add('mv-picking-mode');
-        }, 300);
+        }, 400);
     }
 
     // Cross-tab Synchronization Layer Hook Loop
@@ -475,6 +474,10 @@
             updateLauncher();
             updatePickingToggleButtons();
             if (getPickingMode()) injectCardButtons();
+        }
+        if (e.key && (e.key.includes("UniversalMediaLauncher") || e.key.includes("clean_on_exit"))) {
+            console.log("UniversalMediaLauncher: True configuration mutation recorded. Synchronizing...");
+            syncFromStashConfig();
         }
     });
 
