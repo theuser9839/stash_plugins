@@ -296,3 +296,17 @@ body:not(.mv-picking-mode) .mv-filter-add-btn {
     line-height: 1;
     color: #fff;
 }
+
+.mv-picking-toggle-btn svg,
+#mv-picking-nav-btn button svg,
+#mv-picking-standalone svg {
+    width: 18px !important;
+    height: 18px !important;
+    display: block !important;
+    margin: 0 auto !important; /* Perfect pixel alignment context centering */
+    transition: transform 0.15s ease !important;
+}
+
+.mv-picking-toggle-btn:hover svg {
+    transform: scale(1.1);
+}
