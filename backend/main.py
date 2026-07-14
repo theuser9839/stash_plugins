@@ -24,8 +24,8 @@ def fetch_stash_authoritative_queue():
             # This extracts the exact string array synchronized from main.js!
             plugins_config = res_json.get("data", {}).get("configuration", {}).get("plugins", {})
             
-            # Stash stores it inside your configured multiView config storage slots
-            raw_queue_string = plugins_config.get("multiView", {}).get("queue", "[]")
+            # Stash stores it inside your configured ExternalGalleryViewer config storage slots
+            raw_queue_string = plugins_config.get("ExternalGalleryViewer", {}).get("queue", "[]")
             
             # Re-parse the local database string back into a clean python list array
             parsed_list = json.loads(raw_queue_string)

@@ -1,13 +1,12 @@
 (function () {
     'use strict';
 
-    if (window.multiViewLoaded) return;
-    window.multiViewLoaded = true;
+    if (window.ExternalGalleryViewerLoaded) return;
+    window.ExternalGalleryViewerLoaded = true;
 
-    const STORAGE_KEY = 'stash-multiview-queue';
-    const MODE_STORAGE_KEY = 'stash-multiview-picking-mode';
-    const PLAYER_URL = '/plugin/multiView/assets/index.html';
-
+    const STORAGE_KEY = 'stash-ExternalGalleryViewer-queue';
+    const MODE_STORAGE_KEY = 'stash-ExternalGalleryViewer-picking-mode';
+    
     function getPickingMode() {
         return localStorage.getItem(MODE_STORAGE_KEY) === 'true';
     }
@@ -22,18 +21,18 @@
         document.body.classList.toggle('mv-picking-mode', getPickingMode());
         document.querySelectorAll('.mv-picking-toggle-btn').forEach(btn => {
             btn.classList.toggle('active', getPickingMode());
-            btn.title = getPickingMode() ? 'Disable Multiview Picking Mode' : 'Enable Multiview Picking Mode';
+            btn.title = getPickingMode() ? 'Disable External Viewer Picking Mode' : 'Enable External Viewer Picking Mode';
         });
         updateLauncher();
         injectFilterBtn();
     }
 
-    const MAX_QUEUE = 16;
+    const MAX_QUEUE = 50;
 
     // ── Queue storage ────────────────────────────────────────────────
     // The queue is SHARED across four clients (this plugin, the player,
-    // binge web, binge-iOS, multiview-ios). The single source of truth is
-    // Stash's plugin config (configuration.plugins.multiView.queue);
+    // binge web, binge-iOS, ExternalGalleryViewer-ios). The single source of truth is
+    // Stash's plugin config (configuration.plugins.ExternalGalleryViewer.queue);
     // localStorage is only a fast local cache, always reconciled FROM
     // config. Every mutation is a read-modify-write of config so a
     // concurrent change from another client is never clobbered.
@@ -50,7 +49,7 @@
             body: JSON.stringify({ query: '{ configuration { plugins } }' })
         });
         const j = await r.json();
-        const raw = j?.data?.configuration?.plugins?.multiView?.queue;
+        const raw = j?.data?.configuration?.plugins?.ExternalGalleryViewer?.queue;
         try { const a = JSON.parse(raw || '[]'); return Array.isArray(a) ? a : []; }
         catch { return []; }
     }
@@ -59,7 +58,7 @@
         await fetch('/graphql', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                query: 'mutation($input: Map!) { configurePlugin(plugin_id: "multiView", input: $input) }',
+                query: 'mutation($input: Map!) { configurePlugin(plugin_id: "ExternalGalleryViewer", input: $input) }',
                 variables: { input: { queue: JSON.stringify(q) } }
             })
         });
@@ -159,7 +158,7 @@
     function addFilterSlot() {
         const f = parseCurrentFilter();
         if (!f) return;
-        if (getQueue().length >= MAX_QUEUE) { alert('Maximum 16 items in the multiview queue.'); return; }
+        if (getQueue().length >= MAX_QUEUE) { alert('Maximum ' + MAX_QUEUE + ' items in the ExternalGalleryViewer queue.'); return; }
         // Read-modify-write config so a concurrent change isn't clobbered.
         mutateConfigQueue(items => {
             if (items.length >= MAX_QUEUE) return null;
@@ -176,7 +175,7 @@
         id = String(id);
         const q0 = getQueue();
         const want = !q0.includes(id);   // intent = the inverse of what the user saw
-        if (want && q0.length >= MAX_QUEUE) { alert('Maximum 16 items in the multiview queue.'); return; }
+        if (want && q0.length >= MAX_QUEUE) { alert('Maximum ' + MAX_QUEUE +' items in the ExternalGalleryViewer queue.'); return; }
         // Optimistic cache flip for instant button feedback.
         const q = q0.slice();
         if (want) q.push(id); else { const i = q.indexOf(id); if (i >= 0) q.splice(i, 1); }
@@ -196,7 +195,7 @@
     function createPickingToggleBtn() {
         const btn = document.createElement('button');
         btn.className = 'btn btn-secondary mv-picking-toggle-btn' + (getPickingMode() ? ' active' : '');
-        btn.title = getPickingMode() ? 'Disable Multiview Picking Mode' : 'Enable Multiview Picking Mode';
+        btn.title = getPickingMode() ? 'Disable External Viewer Picking Mode' : 'Enable External Viewer Picking Mode';
         btn.innerHTML = GRID_ICON_SVG;
         btn.addEventListener('click', e => {
             e.preventDefault();
@@ -266,7 +265,7 @@
             const btn = document.createElement('button');
             btn.className = 'mv-add-btn' + (isQueued(id) ? ' mv-queued' : '');
             btn.dataset.galleryId = id;
-            btn.title = 'Add to Multiview';
+            btn.title = 'Add to ExternalGalleryViewer';
             btn.innerHTML = isQueued(id) ? CHECK_SVG : PLUS_ICON_SVG;
 
             btn.addEventListener('click', e => {
@@ -296,14 +295,14 @@
         const btn = document.createElement('button');
         btn.id = 'mv-gallery-btn';
         btn.className = 'mv-gallery-page-btn btn btn-secondary' + (isQueued(id) ? ' active' : '');
-        btn.title = isQueued(id) ? 'Remove from Multiview' : 'Add to Multiview';
+        btn.title = isQueued(id) ? 'Remove from ExternalGalleryViewer' : 'Add to ExternalGalleryViewer';
         btn.innerHTML = GRID_ICON_SVG;
 
         btn.addEventListener('click', () => {
             togglegallery(id);
             const queued = isQueued(id);
             btn.classList.toggle('active', queued);
-            btn.title = queued ? 'Remove from Multiview' : 'Add to Multiview';
+            btn.title = queued ? 'Remove from ExternalGalleryViewer' : 'Add to ExternalGalleryViewer';
         });
 
         toolbar.appendChild(btn);
@@ -323,7 +322,7 @@
             if (m) {
                 const queued = isQueued(m[1]);
                 galleryBtn.classList.toggle('active', queued);
-                galleryBtn.title = queued ? 'Remove from Multiview' : 'Add to Multiview';
+                galleryBtn.title = queued ? 'Remove from ExternalGalleryViewer' : 'Add to ExternalGalleryViewer';
             }
         }
     }
@@ -349,7 +348,7 @@
             el = document.createElement('div');
             el.id = 'mv-launcher';
             el.innerHTML = `
-                <button id="mv-open-btn" title="Open Multiview">${GRID_ICON_SVG}</button>
+                <button id="mv-open-btn" title="Open ExternalGalleryViewer">${GRID_ICON_SVG}</button>
                 <span id="mv-gallery-count" class="mv-launcher-count"></span>
                 <span id="mv-filter-count" class="mv-launcher-count mv-launcher-filter-count"></span>
                 <button id="mv-clear-queue" title="Clear queue">&times;</button>
@@ -499,7 +498,7 @@
 
     // ?"??"? SVG icon ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
 
-    const GRID_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg>`;
+    const GRID_ICON_SVG = `<svg xmlns="http://w3.org" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3H3v2M21 3h-2v2M5 21H3v-2M21 21h-2v-2"></path><rect x="6" y="6" width="12" height="12" rx="1"></rect><circle cx="9.5" cy="9.5" r="1"></circle><path d="m6 16 3-3 3 3"></path><path d="m11 15 2.5-2.5 4.5 4.5"></path></svg>`;
 
     const PLUS_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 12H18M12 6V18"/></svg>`;
 
@@ -544,7 +543,7 @@
     });
 
     // Cross-CLIENT: the queue can change from binge web, binge-iOS, the
-    // player, or multiview-ios. Poll config while the tab is visible, and
+    // player, or ExternalGalleryViewer-ios. Poll config while the tab is visible, and
     // re-sync the moment it becomes visible, so the buttons never show a
     // stale queue. (storage events only fire same-origin across tabs.)
     setInterval(() => {

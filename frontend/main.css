@@ -9,9 +9,10 @@
    what multiview shipped before token introduction — vanilla Stash
    sees zero visual change. */
 :root {
-    --mv-accent:        var(--accent, #f97316);
-    --mv-accent-hover:  var(--accent-bright, #ea6c0a);
-    --mv-accent-tint:   var(--accent-tint, rgba(249, 115, 22, 0.2));
+    --mv-accent:        #d4af37;                     /* Premium Metallic Gold Base */
+    --mv-accent-hover:  #f3cd44;                     /* Vibrant Gold Hover Accent */
+    --mv-accent-tint:   rgba(212, 175, 55, 0.2);     /* 20% Alpha Gold Overlay Tint */
+
     --mv-chrome-bg:     #1a1a1a;
     --mv-border:        #333;
     --mv-overlay-bg:    rgba(0, 0, 0, 0.65);
