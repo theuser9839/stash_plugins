@@ -45,11 +45,11 @@ You may also enjoy the controls and experience that some desktop players offer.
 ## Screenshots
 This is the Galleries tab of stash view the plugin toggle picker activated and 3 galleries already selected.
 
-![UniversalMediaLauncherPreview](/frontend/assets/UniversalMediaLauncher_screenshot.png)
+![UniversalMediaLauncherPreview](UniversalMediaLauncher_screenshot.png)
 
 Now an example of what happens when you open the galleries with a desktop app, FastStone in this case:
 
-![FastStone_viewer_sample_screenshot](/frontend/assets/fastStone_viewer_sample_screenshot.png)
+![FastStone_viewer_sample_screenshot](fastStone_viewer_sample_screenshot.png)
 
 
 ## Disclaimer
