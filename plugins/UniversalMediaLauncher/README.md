@@ -1,6 +1,6 @@
 # 🚀 Universal Media Launcher (UML) for Stash
 
-A Stash plugin  that allows to queue up multiple Gallery Folders and Scene Videos into independent playlist channels and launch them directly into your favorite native desktop applications.
+A Stash plugin  that allows to queue up multiple Gallery Folders and Scene Videos to independent playlist channels and launch them directly from your favorite native desktop applications.
 
 Bypass the browser's video encoding boundaries and image rendering lags completely by routing your Stash media straight to your local operating system players.
 
@@ -33,13 +33,21 @@ You may also enjoy the controls and experience that some desktop players offer.
 ## Requiments
     To use the galleries launcher in Windows (not required on Linux) you must be able to run Stash as Administrator to create the virtual folders.
 
-## How to Use: Its very easy!
+## How to Use: Short Version
+1. Configure the applications paths in Stash Settings -> Plugins.
+2. Navigate to a Stash page with scenes or galleries, such as Galleries or Scenes, or into a specific Performer/Studio.
+3. Click on the **Universal Media Launcher** picker toggle icon (🚀 it's a rocket!)
+4. Add galleries to your playlist by clicking on the cards's '+' overlaus
+5. Click the floating widget's icons to launch the playlists.
+
+
+## How to Use: Extended
 1. Go to your Stash Settings -> Plugins.
-2. Find Universal Media Launcher and configure the application paths.
+2. Find Universal Media Launcher and configure the applications paths.
 3. Navigate to a Stash page with scenes or galleries, such as Galleries or Scenes, or into a specific Performer/Studio.
 4. Locate the **Universal Media Launcher** picker toggle icon (🚀 it's a rocket!) on the right of the stash toolbar before the zoom slider.
 5. Click the rocket to activate picking mode, it will render `+` badges to card thumbnails and a widget on the bottom right.
-6. Click the '+' on the scenes or galleries you want to save into the playlists.
+6. Click the '+' on the scenes or galleries you want to save to the playlists.
 7. Scenes and galleries have different playlists. You will see the widget updating each playlist count.
 8. Click the floating widget icons on the bottom right of your screen to launch the desired queue in your selected app.
 9. At any time you can unticked a ticked item for it to be removed from the playlist. Or you can clear the entire playlist with X icons-
@@ -50,7 +58,7 @@ This is the Galleries tab of stash view the plugin toggle picker activated and 3
 
 ![UniversalMediaLauncherPreview](assets/UniversalMediaLauncher_screenshot.png)
 
-Now an example of what happens when you open the galleries with a desktop app, FastStone in this case:
+Now an example of what happens when you open some galleries with a desktop app, FastStone in this case:
 
 ![FastStone_viewer_sample_screenshot](assets/fastStone_viewer_sample_screenshot.png)
 
