@@ -22,7 +22,7 @@ You may also enjoy the controls and experience that some desktop players offer.
 ### Option 1 — Automatic (recommended)
 
     In Stash go to Settings → Plugins → Add Source and enter:
-    https://theuser9839.github.io/plugins/main/index.yml
+    https://theuser9839.github.io/stash_plugins/main/index.yml
     Find Universal Media Launcher in the plugin browser and click Install
 
 ### Option 2 — Manual
