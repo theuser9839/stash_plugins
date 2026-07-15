@@ -150,30 +150,33 @@ def open_viewer(gallery_ids, input_data):
 
     VIEWER_PATH = fetch_stash_custom_setting("viewer_path")
     
+    # 1. First, screen out the magic keyword "explorer"
+    # 2. Then, let shutil.which check both absolute paths and system environment PATHs
+    resolved_viewer_path = shutil.which(VIEWER_PATH) if (VIEWER_PATH and VIEWER_PATH != "explorer") else None
+
     try:
         # =========================================================================
         # CROSS-PLATFORM IMAGE VIEWER DISPATCH
         # =========================================================================
         if os.name == 'nt':
             # Windows execution branch
-            if VIEWER_PATH and VIEWER_PATH != "explorer" and os.path.exists(VIEWER_PATH):
-                subprocess.Popen([VIEWER_PATH, VIRTUAL_BASE_DIR])
+            if resolved_viewer_path:
+                subprocess.Popen([resolved_viewer_path, VIRTUAL_BASE_DIR])
             else:
                 subprocess.Popen(f'explorer.exe "{VIRTUAL_BASE_DIR}"', shell=True)
         else:
-            # Linux / WSL execution branch (Corrected to dynamically check the settings)
-            if VIEWER_PATH and VIEWER_PATH != "explorer":
-                # Safely split strings into executable argument arrays on Linux
-                # Handles complex commands or native binary executions cleanly
-                subprocess.Popen([VIEWER_PATH, VIRTUAL_BASE_DIR])
+            # Linux / WSL execution branch
+            if resolved_viewer_path:
+                subprocess.Popen([resolved_viewer_path, VIRTUAL_BASE_DIR])
             else:
                 # Default Linux desktop open handler fallback
                 subprocess.Popen(['xdg-open', VIRTUAL_BASE_DIR])
-                
+
         return {"status": "success", "output": "Galleries folder launched."}
-        
+      
     except Exception as e:
         sys.stderr.write(f"[UniversalMediaLauncher] [CRITICAL] Failed to execute image viewer: {str(e)}\n")
+        logger.error(f"[UniversalMediaLauncher] [CRITICAL] Failed to execute image viewer: {str(e)}\n")
         return {"status": "error", "output": f"Failed to execute image viewer: {str(e)}"}
 
 
@@ -262,5 +265,6 @@ def open_scene_player(scene_ids, input_data):
             
     except Exception as launch_err:
         sys.stderr.write(f"[UniversalMediaLauncher] [CRITICAL] Video application initialization crashed: {str(launch_err)}\n")
+        logger.error(f"[UniversalMediaLauncher] [CRITICAL] Video application initialization crashed: {str(launch_err)}\n")
         return {"status": "error", "output": f"Video application initialization crashed: {str(launch_err)}"}
 
