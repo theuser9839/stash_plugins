@@ -7,6 +7,10 @@ Bypass the browser's video encoding boundaries and image rendering lags complete
 - Open Scenes in desktop **Video players** applications
 - View Galleries in desktop **Image viewers** applications
 - Create **playlists** for your scenes and galleries and play them in external applications
+- Playlists are stored in the browser and survive server and browser's restarts
+- Launch your playlists from any page inside stash using the widget launcher
+- Works on **Windows** and **Linux**
+- Supports environment path variables for the external applications paths
 
 ## Main Motivation
 
