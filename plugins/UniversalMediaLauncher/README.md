@@ -37,7 +37,7 @@ You may also enjoy the controls and experience that some desktop players offer.
 1. Configure the applications paths in Stash Settings -> Plugins.
 2. Navigate to a Stash page with scenes or galleries, such as Galleries or Scenes, or into a specific Performer/Studio.
 3. Click on the **Universal Media Launcher** picker toggle icon (🚀 it's a rocket!)
-4. Add galleries to your playlist by clicking on the cards's '+' overlaus
+4. Add galleries and Scenes to your playlist by clicking on the cards's '+' overlays
 5. Click the floating widget's icons to launch the playlists.
 
 
