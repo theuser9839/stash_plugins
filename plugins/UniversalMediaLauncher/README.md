@@ -30,6 +30,9 @@ You may also enjoy the controls and experience that some desktop players offer.
     Download this repository (Code → Download ZIP) and extract it
     Place the UniversalMediaLauncher folder inside Stash plugins directory.
 
+## Requiments
+    To use the galleries launcher in Windows (not required on Linux) you must be able to run Stash as Administrator to create the virtual folders.
+
 ## How to Use: Its very easy!
 1. Go to your Stash Settings -> Plugins.
 2. Find Universal Media Launcher and configure the application paths.
