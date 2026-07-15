@@ -1,23 +1,26 @@
 # 🚀 Universal Media Launcher (UML) for Stash
 
-A Stash plugin  that allows to queue up multiple Gallery Folders and Scene Videos to independent playlist channels and launch them directly from your favorite native desktop applications.
-
+A Stash plugin to queue up multiple Galleries and Scenes to independent playlists and launch them directly from your favorite native desktop applications.
 Bypass the browser's video encoding boundaries and image rendering lags completely by routing your Stash media straight to your local operating system players.
+## Features
+Open Scenes in desktop Video players applications
+View Galleries in desktop Image viewers applications
+Create playlists for your scenes and galleries and play them in external applications
 
 ## Main Motivation
 
 ### Galleries
-I prefer browsing galleries with a directory list sidebar and keyboard fast navigation, stash is great for organizing, tagging and finding your content but its gallery viewer is lacking for me. This plugin merges the best of both worlds, you can quickly browse through your galleries in stash and add them to a playlist them have your favorite desktop application open them.
+I prefer browsing galleries with a directory list sidebar and keyboard fast navigation, stash is great for organizing, tagging and finding your content but its gallery viewer is lacking for me. This plugin merges the best of both worlds, you can quickly browse through your galleries in stash and add them to a playlist, afterwards have your favorite desktop application open them.
 
-To achieve this i used a simple solution to create virtual folders on Windows and symlinks on Linux, which take virtually no space in your drive and let you browse the galleries that you chose.
-Personally i recommend a image viewer like FastStone for windows or Geeqie for linux, that allow you to browse those virtual folder nicely, but you can use whatever you prefer.
+To achieve this i used a simple solution: to create virtual folders on Windows and symlinks on Linux, which take virtually no space in your drive and let you browse the galleries that you chose.
+Personally i recommend a image viewer like FastStone for windows or Geeqie for linux, to browse those virtual folder nicely, but you can use whatever you prefer.
 
 ### Videos
-Stash video player is pretty good, with issues only arising when it needs to transcode some video because of browser's unsupported codecs. In this case you can also use this plugin to queue your videos and have them play in a desktop player that you like.
+Stash video player is pretty good, with issues only arising when it needs to transcode some videos because of browser's unsupported codecs. In this case you can also use this plugin to queue your videos and have them play in a desktop player of your choice.
 Another benefit is being in total control of your playlist queue.
-You may also enjoy the controls and experience that some desktop players offer.
+You may also enjoy the shortcuts, controls and user experience that some desktop players offer.
 
-## Instalation
+## Installation
 
 ### Option 1 — Automatic (recommended)
 
@@ -30,7 +33,7 @@ You may also enjoy the controls and experience that some desktop players offer.
     Download this repository (Code → Download ZIP) and extract it
     Place the UniversalMediaLauncher folder inside Stash plugins directory.
 
-## Requiments
+## Requirements
     To use the galleries launcher in Windows (not required on Linux) you must be able to run Stash as Administrator to create the virtual folders.
 
 ## How to Use: Short Version
@@ -50,7 +53,7 @@ You may also enjoy the controls and experience that some desktop players offer.
 6. Click the '+' on the scenes or galleries you want to save to the playlists.
 7. Scenes and galleries have different playlists. You will see the widget updating each playlist count.
 8. Click the floating widget icons on the bottom right of your screen to launch the desired queue in your selected app.
-9. At any time you can unticked a ticked item for it to be removed from the playlist. Or you can clear the entire playlist with X icons-
+9. At any time you can un-ticked a ticked item for it to be removed from the playlist. Or you can clear the entire playlist with X icons-
 10. Closing the widget or toggling picking mode off will clean the virtual directories if you configured that way in the plugin settings.
 
 ## Screenshots
@@ -69,7 +72,7 @@ I took heavy inspiration in the Stash Multiview plugin by ordureconnoisseur:
 
      https://github.com/ordureconnoisseur/plugins/tree/main/plugins/multiView
 
-And by heavy inspirantion i mean literally copied it's UI code then had AI worked over that to make the changes i needed. Multiview picker its amazing and looks good.
+And by heavy inspiration i mean literally copied it's UI code then had AI worked over that to make the changes i needed. Multiview picker its amazing and looks good.
 If you find any bugs, please report them, if you want some more features request them and i will consider them, though i rather keep this minimal.
 
 ## Repository Structure
