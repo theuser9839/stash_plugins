@@ -1,11 +1,12 @@
 # 🚀 Universal Media Launcher (UML) for Stash
 
-A Stash plugin to queue up multiple Galleries and Scenes to independent playlists and launch them directly from your favorite native desktop applications.
+A Stash plugin to queue up multiple **Galleries** and **Scenes** to independent playlists and launch them directly from your favorite native desktop applications.
 Bypass the browser's video encoding boundaries and image rendering lags completely by routing your Stash media straight to your local operating system players.
+
 ## Features
-Open Scenes in desktop Video players applications
-View Galleries in desktop Image viewers applications
-Create playlists for your scenes and galleries and play them in external applications
+- Open Scenes in desktop **Video players** applications
+- View Galleries in desktop **Image viewers** applications
+- Create **playlists** for your scenes and galleries and play them in external applications
 
 ## Main Motivation
 
@@ -16,7 +17,7 @@ To achieve this i used a simple solution: to create virtual folders on Windows a
 Personally i recommend a image viewer like FastStone for windows or Geeqie for linux, to browse those virtual folder nicely, but you can use whatever you prefer.
 
 ### Videos
-Stash video player is pretty good, with issues only arising when it needs to transcode some videos because of browser's unsupported codecs. In this case you can also use this plugin to queue your videos and have them play in a desktop player of your choice.
+When Stash needs to transcode videos because of browser's unsupported codecs sometimes can be frustrating, in these instances this plugin let you play those videos in a desktop player of your choice.
 Another benefit is being in total control of your playlist queue.
 You may also enjoy the shortcuts, controls and user experience that some desktop players offer.
 
